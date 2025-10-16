@@ -1,0 +1,66 @@
+{
+  "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
+  "name": "real-or-render",
+  "post": {
+    "dir": "dist/client",
+    "entrypoints": {
+      "default": {
+        "entry": "index.html",
+        "inline": true
+      }
+    }
+  },
+  "server": {
+    "dir": "dist/server",
+    "entry": "index.cjs"
+  },
+  "media": {
+    "dir": "assets"
+  },
+  "menu": {
+    "items": [
+      {
+        "label": "Seed Daily Game Data",
+        "description": "daily-game-example",
+        "location": "subreddit",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/provide-data"
+      },
+      {
+        "label": "Post Daily Game",
+        "description": "post daily game",
+        "location": "subreddit",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/post-daily-game"
+      }
+    ]
+  },
+  "forms": {
+    "createGameForm": "/internal/form/create-game-form",
+    "postDailyGameForm": "/internal/form/post-daily-game-form"
+  },
+  "triggers": {
+    "onAppInstall": "/internal/on-app-install"
+  },
+  "dev": {
+    "subreddit": "real_or_render_dev"
+  },
+  "scheduler": {
+    "tasks": {
+      "create-game-post-task": {
+        "endpoint": "/internal/scheduler/create-game-post",
+        "cron": "*/1 * * * *"
+      }
+    }
+  },
+  "permissions": {
+    "http": {
+      "enable": true,
+      "domains": [
+        "api.real-or-render.com",
+        "real-or-render.com"
+      ]
+    },
+    "media": true
+  }
+}
