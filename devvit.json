@@ -61,6 +61,11 @@
         "real-or-render.com"
       ]
     },
-    "media": true
+    "media": true,
+    "reddit": {
+      "asUser": [
+        "SUBMIT_COMMENT"
+      ]
+    }
   }
 }

@@ -39,26 +39,30 @@ export const formAction = (router: Router): void => {
 
       const realResponses = await Promise.all(
         transformedData.map(async (item) => {
-          return await media.upload({
+          const mediaAsset = await media.upload({
             url: item.real,
             type: 'image',
           });
+
+          return mediaAsset.mediaUrl
         })
       );
 
       const renderResponses = await Promise.all(
         transformedData.map(async (item) => {
-          return await media.upload({
+          const mediaAsset = await media.upload({
             url: item.render,
             type: 'image',
           });
+
+          return mediaAsset.mediaUrl
         })
       );
 
       const transformedDataWithMedia = transformedData.map((item, index) => ({
         ...item,
-        real: realResponses[index]?.mediaId,
-        render: renderResponses[index]?.mediaId,
+        real: realResponses[index],
+        render: renderResponses[index],
       }));
 
       console.log(`Form action triggered. Saving ${date} and ${gameData} to processing queue.`);
@@ -94,7 +98,6 @@ export const formAction = (router: Router): void => {
       if (!gameData) {
         res.status(200).json({
           showToast: {
-            appearance: 'error',
             text: 'No game data found',
           },
         });
@@ -110,7 +113,14 @@ export const formAction = (router: Router): void => {
         title: `Daily Game - ${date}`,
         postData: {
           gameData: gameDataJson,
+          date: date,
         },
+        splash: {
+          appDisplayName: 'Real or Render',
+          backgroundUri: 'ror_thumb.png',
+          description: date,
+          heading: 'Can You Spot Real or Render?',
+        }
       });
 
       res.status(200).json({

@@ -15,9 +15,33 @@ export const initGameAction = (router: Router): void => {
 
         /* ========== Start Focus - Fetch from redis + return result ========== */
 
-        // Confirm post data and level name exists
+        // Confirm post data exists
         const { postData } = context;
-        if (!postData || !postData.levelName || typeof postData.levelName !== 'string') {
+        if (!postData) {
+          console.error('API Init Error: postData not found in devvit context');
+          res.status(400).json({
+            status: 'error',
+            message: 'postData is required but missing from context',
+          });
+          return;
+        }
+
+        // Get username
+        const username = await reddit.getCurrentUsername();
+
+        // Check if this is a daily game post (has gameData and date)
+        if (postData.gameData && postData.date) {
+          res.json({
+            type: 'init',
+            gameData: postData.gameData,
+            date: postData.date,
+            username: username ?? 'anonymous',
+          });
+          return;
+        }
+
+        // Otherwise, check for legacy level-based format
+        if (!postData.levelName || typeof postData.levelName !== 'string') {
           console.error('API Init Error: postData.levelName not found in devvit context');
           res.status(400).json({
             status: 'error',
@@ -26,11 +50,8 @@ export const initGameAction = (router: Router): void => {
           return;
         }
 
-        // Fetch level data and username
-        const [levelData, username] = await Promise.all([
-          redis.get(`level:${postData.levelName}`),
-          reddit.getCurrentUsername()
-        ]);
+        // Fetch level data
+        const levelData = await redis.get(`level:${postData.levelName}`);
 
         // Fail if level data is missing
         if (!levelData) {
@@ -42,7 +63,7 @@ export const initGameAction = (router: Router): void => {
           return;
         }
 
-        // Otherwise, return data back to post!
+        // Return legacy format
         res.json({
           type: 'init',
           levelName: postData.levelName,
