@@ -2,6 +2,7 @@
 import { media, reddit, redis } from '@devvit/web/server';
 import { JsonObject } from '@devvit/web/shared';
 import { DailyGameData, RoRenderBackendData } from '../../shared/types/api';
+import { thumbSplash } from '../../shared/config/appIcon';
 
 export const formAction = (router: Router): void => {
   router.post('/internal/form/create-game-form', async (req, res): Promise<void> => {
@@ -83,8 +84,9 @@ export const formAction = (router: Router): void => {
     } catch (error) {
       console.error(`Error in form action: ${error}`);
       res.status(400).json({
-        status: 'error',
-        message: 'Form action failed',
+        showToast: {
+          text: `Form action failed: ${error}`,
+        },
       });
     }
   });
@@ -107,7 +109,19 @@ export const formAction = (router: Router): void => {
       console.log('gameData', gameData);
       const gameDataJson: JsonObject = JSON.parse(gameData ?? '');
 
-      // submit post
+      // Upload base template with date dynamically rendered
+      const baseTemplateUrl = `data:image/png;base64,${thumbSplash}`;
+
+      console.log('uploading base template asset');
+      const asset = await media.upload({
+        type: 'image',
+        url: baseTemplateUrl,
+      });
+
+      console.log('asset uploaded successfully');
+
+      console.log('submitting post');
+      // submit post with date in description
       await reddit.submitCustomPost({
         subredditName: 'real_or_render_dev',
         title: `Daily Game - ${date}`,
@@ -117,8 +131,8 @@ export const formAction = (router: Router): void => {
         },
         splash: {
           appDisplayName: 'Real or Render',
-          backgroundUri: 'ror_thumb.png',
-          description: date,
+          backgroundUri: asset.mediaUrl,
+          description: `Daily Challenge: ${date}`,
           heading: 'Can You Spot Real or Render?',
         }
       });
@@ -130,12 +144,15 @@ export const formAction = (router: Router): void => {
         },
       });
 
+      console.log('post submitted successfully');
+
       /* ========== End Focus - Queue level data ========== */
     } catch (error) {
       console.error(`Error in form action: ${error}`);
       res.status(400).json({
-        status: 'error',
-        message: 'Form action failed',
+        showToast: {
+          text: `Form action failed: ${error}`,
+        },
       });
     }
   });

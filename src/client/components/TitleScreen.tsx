@@ -82,7 +82,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ gameDate, onPlay }) =>
         {/* Main Content - Center */}
         <div className="flex flex-col items-center z-10">
           {/* ASCII Art Title */}
-          <pre className="ascii-art text-primary text-center overflow-x-auto whitespace-pre font-mono leading-tight px-2 max-w-full text-[0.53rem] sm:text-xs mb-4">
+          <pre className="ascii-art text-primary text-center overflow-x-auto whitespace-pre font-mono leading-tight px-2 max-w-full text-[0.5rem] sm:text-xs mb-4">
             {asciiTitle}
           </pre>
 

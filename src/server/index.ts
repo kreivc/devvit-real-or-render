@@ -7,7 +7,6 @@ import { formAction } from './actions/2_formAction';
 import { scheduledAction } from './actions/3_scheduledAction';
 import { initGameAction } from './actions/4_initGameAction';
 import { gameApiActions } from './actions/5_gameApiActions';
-import { splashScreenAction } from './actions/6_splashScreenAction';
 /* ========== End Focus - Import action files ========== */
 
 const app = express();
@@ -27,7 +26,6 @@ formAction(router);
 scheduledAction(router);
 initGameAction(router);
 gameApiActions(router);
-splashScreenAction(router);
 /* ========== End Focus - Register game actions ========== */
 
 // Use router middleware
