@@ -6,15 +6,16 @@ interface ShareModalProps {
     totalTimeMs: number;
     rank: number | undefined;
     totalPlayers: number | undefined;
+    isFirstPlay: boolean;
     onClose: () => void;
 }
 
 export const ShareModal: React.FC<ShareModalProps> = ({
-    gameDate,
     correct,
     totalTimeMs,
     rank,
     totalPlayers,
+    isFirstPlay,
     onClose,
 }) => {
     const [comment, setComment] = useState('');
@@ -67,8 +68,14 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-card rounded-lg border border-border max-w-md w-full p-4">
+        <div
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={onClose}
+        >
+            <div
+                className="bg-card/90 backdrop-blur-md rounded-lg border border-border max-w-md w-full p-4 shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+            >
                 {success ? (
                     <div className="text-center py-8">
                         <div className="text-4xl mb-2">✅</div>
@@ -76,15 +83,22 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                     </div>
                 ) : (
                     <>
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-bold">💬 Share Your Results</h2>
-                            <button
-                                onClick={onClose}
-                                className="text-muted-foreground hover:text-foreground text-2xl leading-none"
-                                disabled={isSubmitting}
-                            >
-                                ×
-                            </button>
+                        <div className="mb-4">
+                            <div className="flex justify-between items-center mb-2">
+                                <h2 className="text-lg font-bold">💬 Share Your Results</h2>
+                                <button
+                                    onClick={onClose}
+                                    className="text-muted-foreground hover:text-foreground text-2xl leading-none"
+                                    disabled={isSubmitting}
+                                >
+                                    ×
+                                </button>
+                            </div>
+                            {!isFirstPlay && (
+                                <p className="text-xs text-yellow-400 bg-yellow-900 bg-opacity-20 border border-yellow-500 rounded p-2">
+                                    ℹ️ Sharing your first game score (replays don't count)
+                                </p>
+                            )}
                         </div>
 
                         <div className="bg-background rounded-lg p-3 mb-4 border border-border">

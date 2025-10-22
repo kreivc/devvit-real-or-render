@@ -13,6 +13,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ gameDate, onPlay }) =>
   const { userId } = context;
   const [playData, setPlayData] = useState<CheckPlayedResponse | null>(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
 
   // Get initial data from context (passed from splash screen)
   const totalPlayersToday = playData?.totalPlayersToday || 0;
@@ -45,6 +46,11 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ gameDate, onPlay }) =>
         if (playResponse.ok) {
           const data: CheckPlayedResponse = await playResponse.json();
           setPlayData(data);
+
+          // Trigger warning animation with a slight delay for smooth transition
+          if (data.played) {
+            setTimeout(() => setShowWarning(true), 100);
+          }
         }
       } catch (err) {
         console.error('Error checking play status:', err);
@@ -82,7 +88,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ gameDate, onPlay }) =>
         {/* Main Content - Center */}
         <div className="flex flex-col items-center z-10">
           {/* ASCII Art Title */}
-          <pre className="ascii-art text-primary text-center overflow-x-auto whitespace-pre font-mono leading-tight px-2 max-w-full text-[0.475rem] sm:text-xs mb-4">
+          <pre className="ascii-art text-primary text-center overflow-x-auto whitespace-pre font-mono leading-tight px-2 max-w-full text-[0.475rem] sm:text-xs mb-4 overflow-y-hidden">
             {asciiTitle}
           </pre>
 
@@ -101,9 +107,15 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ gameDate, onPlay }) =>
           <button
             type="button"
             onClick={onPlay}
-            className="px-8 py-3 bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80 rounded-lg font-bold text-base sm:text-lg transition-colors shadow-lg min-h-[44px] my-2"
+            className={`relative py-3 bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80 rounded-lg font-bold text-base sm:text-lg transition-all duration-300 shadow-lg min-h-[44px] my-2 flex items-center justify-center ${playData?.played ? 'px-10' : 'px-8'
+              }`}
           >
-            {playData?.played ? 'Play Again' : 'Play'}
+            <span className={`transition-opacity duration-300 ${playData?.played ? 'opacity-0' : 'opacity-100'}`}>
+              Play
+            </span>
+            <span className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${playData?.played ? 'opacity-100' : 'opacity-0'}`}>
+              Play Again
+            </span>
           </button>
 
           {/* Player Count */}
@@ -114,21 +126,25 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ gameDate, onPlay }) =>
           </div>
 
           {/* Warning if already played (lazy loaded) */}
-          {playData?.played && (
-            <p className="text-xs text-yellow-400 text-center">
-              ⚠️ Replays won't count on leaderboard
-            </p>
-          )}
+          <p className={`text-xs text-yellow-400 text-center transition-all duration-500 ease-out ${showWarning
+            ? 'opacity-100 transform translate-y-0'
+            : 'opacity-0 transform translate-y-2 pointer-events-none'
+            }`}>
+            ⚠️ Replays won't count on leaderboard
+          </p>
         </div>
 
         {/* User Rank Badge - Bottom Right (lazy loaded) */}
-        {playData?.played && playData.score && (
-          <div className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 bg-yellow-500/10 border border-yellow-500 rounded-lg px-3 py-2 backdrop-blur-sm">
-            <div className="text-yellow-400 text-lg sm:text-xl font-bold">
-              #{playData.score.rank}
-            </div>
+        <div
+          className={`absolute bottom-2 right-2 sm:bottom-4 sm:right-4 bg-yellow-500/10 border border-yellow-500 rounded-lg px-3 py-2 backdrop-blur-sm transition-all duration-500 ease-out ${playData?.played && playData.score
+            ? 'opacity-100 transform translate-y-0'
+            : 'opacity-0 transform translate-y-2 pointer-events-none'
+            }`}
+        >
+          <div className="text-yellow-400 text-lg sm:text-xl font-bold">
+            #{playData?.score?.rank}
           </div>
-        )}
+        </div>
       </div>
     </>
   );

@@ -126,7 +126,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({ rounds, onGameComplete }
   return (
     <div className={`bg-background text-foreground p-3 sm:p-4 md:p-6 ${isMobile ? 'flex flex-col h-screen' : 'flex flex-col min-h-screen h-screen max-h-screen'}`}>
       {/* Header with Round Counter and Timer */}
-      <div className={`flex justify-between items-center mb-2 max-w-6xl w-full mx-auto sm:px-4 ${isMobile ? 'mx-2' : 'mb-auto'}`}>
+      <div className={`flex justify-between items-center mb-2 max-w-6xl w-full mx-auto ${isMobile ? 'mx-2' : 'mb-auto'}`}>
         <div className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-primary">
           Round {currentRoundIndex + 1} / {rounds.length}
         </div>

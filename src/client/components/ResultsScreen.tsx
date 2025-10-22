@@ -28,6 +28,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [sourcesExpanded, setSourcesExpanded] = useState(false);
 
   // Calculate score using the formula: (Correct × 1,000,000) + Time(ms)
   const score = correct * 1_000_000 + totalTimeMs;
@@ -88,10 +89,11 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
       {showShareModal && (
         <ShareModal
           gameDate={gameDate}
-          correct={correct}
-          totalTimeMs={totalTimeMs}
+          correct={saveResponse?.saved ? correct : (saveResponse?.originalScore?.correct ?? correct)}
+          totalTimeMs={saveResponse?.saved ? totalTimeMs : (saveResponse?.originalScore?.timeMs ?? totalTimeMs)}
           rank={saveResponse?.rank as number | undefined}
           totalPlayers={saveResponse?.totalPlayers as number | undefined}
+          isFirstPlay={saveResponse?.saved ?? true}
           onClose={() => setShowShareModal(false)}
         />
       )}
@@ -153,21 +155,27 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
             {!loading && !error && saveResponse && (
               <>
-                {saveResponse.saved && saveResponse.rank !== undefined && saveResponse.totalPlayers !== undefined && (
-                  <div className="bg-yellow-900 bg-opacity-20 border border-yellow-500 rounded p-1.5 text-center">
-                    <div className="text-sm font-bold text-yellow-400">
-                      Rank #{saveResponse.rank} / {saveResponse.totalPlayers}
-                    </div>
+                <div
+                  className={`bg-yellow-900 bg-opacity-20 border border-yellow-500 rounded p-1.5 text-center transition-all duration-500 ease-out ${saveResponse.saved && saveResponse.rank !== undefined && saveResponse.totalPlayers !== undefined
+                    ? 'opacity-100 transform translate-y-0'
+                    : 'opacity-0 transform translate-y-2 pointer-events-none'
+                    }`}
+                >
+                  <div className="text-sm font-bold text-yellow-400">
+                    Rank #{saveResponse.rank} / {saveResponse.totalPlayers}
                   </div>
-                )}
+                </div>
 
-                {!saveResponse.saved && (
-                  <div className="bg-blue-900 bg-opacity-20 border border-blue-500 rounded p-1.5 text-center">
-                    <p className="text-blue-400 text-xs">
-                      🔄 Replay - not counted
-                    </p>
-                  </div>
-                )}
+                <div
+                  className={`bg-blue-900 bg-opacity-20 border border-blue-500 rounded p-1.5 text-center transition-all duration-500 ease-out ${!saveResponse.saved
+                    ? 'opacity-100 transform translate-y-0'
+                    : 'opacity-0 transform translate-y-2 pointer-events-none'
+                    }`}
+                >
+                  <p className="text-blue-400 text-xs">
+                    🔄 Replay - not counted
+                  </p>
+                </div>
               </>
             )}
           </div>
@@ -188,25 +196,50 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
             </button>
           </div>
 
-          {/* Photo Sources - Snappy Grid */}
-          <div className="bg-card rounded-lg border border-border p-3">
-            <div className="flex items-center justify-between mb-2">
+          {/* Photo Sources - Accordion */}
+          <div className="bg-card rounded-lg border border-border overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setSourcesExpanded(!sourcesExpanded)}
+              className="w-full flex items-center justify-between p-3 hover:bg-background/50 transition-colors"
+            >
               <span className="font-semibold text-sm">Photo Sources</span>
-              <span className="text-xs text-muted-foreground">Tap to view</span>
+              <span className="text-lg transition-transform" style={{ transform: sourcesExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                ▼
+              </span>
+            </button>
+            <div
+              className="overflow-hidden transition-all duration-300 h-full"
+              style={{ height: sourcesExpanded ? '100%' : '0px' }}
+            >
+              <div className="p-2 pt-0">
+                <div className="grid grid-cols-5 gap-2">
+                  {sources.map((source, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      className="aspect-video bg-background border-2 border-border rounded-lg flex items-center justify-center hover:bg-primary/20 hover:border-primary active:scale-95 transition-all font-bold text-sm"
+                      title={`View Round ${index + 1} source`}
+                      onClick={() => navigateTo(source)}
+                    >
+                      {index + 1}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
-            <div className="grid grid-cols-5 gap-2">
-              {sources.map((source, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  className="aspect-square bg-background border-2 border-border rounded-lg flex items-center justify-center hover:bg-primary/20 hover:border-primary active:scale-95 transition-all font-bold text-sm"
-                  title={`View Round ${index + 1} source`}
-                  onClick={() => navigateTo(source)}
-                >
-                  {index + 1}
-                </button>
-              ))}
-            </div>
+          </div>
+        </div>
+
+        {/* User Rank Badge - Bottom Right (using existing saveResponse data) */}
+        <div
+          className={`absolute bottom-2 right-2 sm:bottom-4 sm:right-4 bg-yellow-500/10 border border-yellow-500 rounded-lg px-3 py-2 backdrop-blur-sm transition-all duration-500 ease-out ${!loading && saveResponse && saveResponse.rank !== undefined
+            ? 'opacity-100 transform translate-y-0'
+            : 'opacity-0 transform translate-y-2 pointer-events-none'
+            }`}
+        >
+          <div className="text-yellow-400 text-lg sm:text-xl font-bold">
+            #{saveResponse?.rank}
           </div>
         </div>
       </div>

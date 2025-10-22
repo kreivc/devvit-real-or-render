@@ -84,20 +84,37 @@ export const gameApiActions = (router: Router): void => {
 
       // Check if user has already played today
       const playerKey = `player:${userId}:${date}`;
+      const leaderboardKey = `leaderboard:daily:${date}`;
       const hasPlayed = await redis.exists(playerKey);
 
       if (hasPlayed) {
-        // User already played today, don't save score
+        // User already played today, don't save score but return their original score
+        const playerData = await redis.hGetAll(playerKey);
+        const originalCorrect = parseInt(playerData.correct || '0', 10);
+        const originalTimeMs = parseInt(playerData.time || '0', 10);
+
+        // Get user's rank from leaderboard
+        const rankIndex = await redis.zRank(leaderboardKey, userId);
+        const rank = rankIndex !== null && rankIndex !== undefined ? rankIndex + 1 : undefined;
+
+        // Get total players
+        const totalPlayers = await redis.zCard(leaderboardKey);
+
         res.json({
           success: true,
           saved: false,
+          rank,
+          totalPlayers,
+          originalScore: {
+            correct: originalCorrect,
+            timeMs: originalTimeMs,
+          },
           message: 'Score not saved. Only first daily play counts toward leaderboard.',
         } as SaveScoreResponse);
         return;
       }
 
       // Save score to leaderboard sorted set
-      const leaderboardKey = `leaderboard:daily:${date}`;
       await redis.zAdd(leaderboardKey, { member: userId, score });
 
       // Save player data to hash
@@ -295,7 +312,7 @@ export const gameApiActions = (router: Router): void => {
   router.post('/api/post-comment', async (_req, res): Promise<void> => {
     try {
       const body = _req.body as PostCommentRequest;
-      const { comment, score, time, rank, totalPlayers } = body;
+      const { comment, score, time } = body;
 
       // Get current post context
       const { postId } = context;
@@ -312,9 +329,9 @@ export const gameApiActions = (router: Router): void => {
       commentText += `Score: **${score}/10**\n`;
       commentText += `Time: **${time}**\n`;
 
-      if (rank && totalPlayers) {
-        commentText += `Rank: **#${rank}** of **${totalPlayers}**\n`;
-      }
+      // if (rank && totalPlayers) {
+      //   commentText += `Rank: **#${rank}** of **${totalPlayers}**\n`;
+      // }
 
       if (comment && comment.trim()) {
         commentText += `\n---\n\n${comment.trim()}`;

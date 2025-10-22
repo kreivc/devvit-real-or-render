@@ -45,6 +45,10 @@ export interface SaveScoreResponse {
   saved: boolean; // false if already played today
   rank?: number;
   totalPlayers?: number;
+  originalScore?: {
+    correct: number;
+    timeMs: number;
+  };
   message?: string;
 }
 
