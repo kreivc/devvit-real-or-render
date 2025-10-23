@@ -1,5 +1,5 @@
 ﻿import { Router } from 'express';
-import { media, reddit } from '@devvit/web/server';
+import { media, reddit, context } from '@devvit/web/server';
 import { JsonValue } from '@devvit/web/shared';
 import { DailyGameData, RoRenderBackendData } from '../../shared/types/api';
 import { thumbSplash } from '../../shared/config/appIcon';
@@ -9,6 +9,7 @@ export const formAction = (router: Router): void => {
     try {
       const { date } = req.body;
       console.log(`Form action triggered. Saving ${date} to processing queue.`);
+      const { subredditName } = context;
 
       const dataUrl = `https://ugupzznjxhwwpowfhpmh.supabase.co/functions/v1/proxy-daily-game/${date}`
 
@@ -82,7 +83,7 @@ export const formAction = (router: Router): void => {
 
       // submit post with date in description
       await reddit.submitCustomPost({
-        subredditName: 'real_or_render_dev',
+        subredditName: subredditName,
         title: `Daily Game - ${date}`,
         postData: {
           gameData: transformedDataWithMedia as JsonValue,

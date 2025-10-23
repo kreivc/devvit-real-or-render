@@ -6,7 +6,7 @@
  */
 
 import { Router } from 'express';
-import { media, reddit } from '@devvit/web/server';
+import { media, reddit, context } from '@devvit/web/server';
 import { DailyGameData, RoRenderBackendData } from '../../shared/types/api';
 import { thumbSplash } from '../../shared/config/appIcon';
 import { JsonValue } from '@devvit/web/shared';
@@ -17,6 +17,7 @@ export const scheduledAction = (router: Router): void => {
     async (_req, res): Promise<void> => {
       try {
         const currentDate = new Date().toISOString().split('T')[0];
+        const { subredditName } = context;
         const dataUrl = `https://ugupzznjxhwwpowfhpmh.supabase.co/functions/v1/proxy-daily-game/${currentDate}`
 
         const response = await fetch(dataUrl);
@@ -89,7 +90,7 @@ export const scheduledAction = (router: Router): void => {
 
         // submit post with date in description
         await reddit.submitCustomPost({
-          subredditName: 'real_or_render_dev',
+          subredditName: subredditName,
           title: `Daily Game - ${currentDate}`,
           postData: {
             gameData: transformedDataWithMedia as JsonValue,

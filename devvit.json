@@ -35,7 +35,7 @@
     "onAppInstall": "/internal/on-app-install"
   },
   "dev": {
-    "subreddit": "real_or_render_dev"
+    "subreddit": "real_or_render"
   },
   "scheduler": {
     "tasks": {
