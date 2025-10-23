@@ -20,13 +20,6 @@
   "menu": {
     "items": [
       {
-        "label": "Seed Daily Game Data",
-        "description": "daily-game-example",
-        "location": "subreddit",
-        "forUserType": "moderator",
-        "endpoint": "/internal/menu/provide-data"
-      },
-      {
         "label": "Post Daily Game",
         "description": "post daily game",
         "location": "subreddit",
@@ -36,7 +29,6 @@
     ]
   },
   "forms": {
-    "createGameForm": "/internal/form/create-game-form",
     "postDailyGameForm": "/internal/form/post-daily-game-form"
   },
   "triggers": {
@@ -57,8 +49,7 @@
     "http": {
       "enable": true,
       "domains": [
-        "api.real-or-render.com",
-        "real-or-render.com"
+        "ugupzznjxhwwpowfhpmh.supabase.co"
       ]
     },
     "media": true,

@@ -6,91 +6,111 @@
  */
 
 import { Router } from 'express';
-import { context, reddit, redis } from '@devvit/web/server';
+import { media, reddit } from '@devvit/web/server';
+import { DailyGameData, RoRenderBackendData } from '../../shared/types/api';
+import { thumbSplash } from '../../shared/config/appIcon';
+import { JsonValue } from '@devvit/web/shared';
 
 export const scheduledAction = (router: Router): void => {
   router.post(
     '/internal/scheduler/create-game-post',
     async (_req, res): Promise<void> => {
       try {
+        const currentDate = new Date().toISOString().split('T')[0];
+        const dataUrl = `https://ugupzznjxhwwpowfhpmh.supabase.co/functions/v1/proxy-daily-game/${currentDate}`
 
-        /* ========== Start Focus - Read data queue + create post ========== */
+        const response = await fetch(dataUrl);
+        const gameDataJson = await response.json() as RoRenderBackendData[];
 
-        // Level data can be provided many different ways, along with different methods of creating new posts
-        // (manually vs. periodically). The data could be provided by a menu item, or read from a (old Reddit) wiki
-        // page, or fetched from an approved external API, or even generated before the post is created. The process
-        // can also upload new image media if necessary.
-        //
-        // New game posts could be created by a menu action directly, or by a scheduled process that runs every day at a
-        // specified time.
-        //
-        // As an example, level data is provided by a menu action, saved into Redis then processed by this scheduled task, which acts like
-        // a "periodic poster" when new data is provided.
+        const pairMap: Record<string, { real?: string; render?: string; source?: string }> = {};
+        gameDataJson.forEach((item) => {
+          if (!pairMap[item.pairId]) {
+            pairMap[item.pairId] = {};
+          }
 
-        // If the queue is empty, return
-        const hasQueue = await redis.exists('data:queue');
-        if (!hasQueue) {
-          console.log('No queued data to process.');
-          res.status(200).json({
-            status: 'success',
-            message: 'No items to process'
-          });
-          return;
-        }
+          // Add null checks to fix "Object is possibly 'undefined'" lint error
+          const pairEntry = pairMap[item.pairId];
+          if (!pairEntry) return; // defensive, but should not happen
 
-        // Get the subreddit context
-        const { subredditName } = context;
-        if (!subredditName) {
-          throw new Error('subredditName is required');
-        }
-
-        // Obtain levelName and gameData from Redis queue
-        const queuedItems = await redis.hGetAll('data:queue');
-
-        // For each record found...
-        const records = Object.entries(queuedItems);
-        for (const record of records) {
-          // Extract levelName and gameData from record
-          const [levelName, gameData] = record;
-
-          // Add game data to redis (level name as key)
-          // NOTE: This is not required, but an example if "game data" is larger than the 2kb allowed in postData
-          await redis.set(`level:${levelName}`, gameData);
-
-          // Create new post!
-          await reddit.submitCustomPost({
-            subredditName: subredditName,
-            title: 'New Game Level - ' + levelName,
-            splash: {
-              appDisplayName: 'Level ' + levelName,
-              heading: 'Level ' + levelName,
-              description: 'Can you solve this level?',
-              backgroundUri: 'default-splash.png',
-              buttonLabel: 'Tap to Start',
-              appIconUri: 'default-icon.png'
-            },
-
-            // Note postData contains the level name, which will be used in the init API to fetch the level game data
-            // from the redis key set above!
-            postData: {
-              levelName: levelName
-            }
-
-          });
-        }
-
-        // Delete Redis key to clear queue
-        await redis.del('data:queue');
-
-        // Return successful result
-        console.log('Processed items and created new posts.');
-        res.status(200).json({
-          status: 'success',
-          message: 'Processed items and created new posts.'
+          if (item.isAI) {
+            pairEntry.render = `https://pub-216211e810364ec381af7be06d5fec4a.r2.dev/${item.imageKey}`;
+          } else {
+            pairEntry.real = `https://pub-216211e810364ec381af7be06d5fec4a.r2.dev/${item.imageKey}`;
+          }
+          pairEntry.source = item.source;
         });
 
-        /* ========== End Focus - Read data queue + create post ========== */
+        const transformedData: DailyGameData[] = Object.entries(pairMap).map(
+          ([pairId, { real, render, source }]) => ({
+            id: pairId,
+            real: real ?? '',
+            render: render ?? '',
+            source: source ?? '',
+          })
+        );
 
+        const realResponses = await Promise.all(
+          transformedData.map(async (item) => {
+            const mediaAsset = await media.upload({
+              url: item.real,
+              type: 'image',
+            });
+
+            return mediaAsset.mediaUrl
+          })
+        );
+
+        const renderResponses = await Promise.all(
+          transformedData.map(async (item) => {
+            const mediaAsset = await media.upload({
+              url: item.render,
+              type: 'image',
+            });
+
+            return mediaAsset.mediaUrl
+          })
+        );
+
+        const transformedDataWithMedia = transformedData.map((item, index) => ({
+          ...item,
+          real: realResponses[index],
+          render: renderResponses[index],
+        }));
+
+        // Upload base template with date dynamically rendered
+        const baseTemplateUrl = `data:image/png;base64,${thumbSplash}`;
+
+        console.log('uploading base template asset');
+        const asset = await media.upload({
+          type: 'image',
+          url: baseTemplateUrl,
+        });
+
+
+        // submit post with date in description
+        await reddit.submitCustomPost({
+          subredditName: 'real_or_render_dev',
+          title: `Daily Game - ${currentDate}`,
+          postData: {
+            gameData: transformedDataWithMedia as JsonValue,
+            date: currentDate as string,
+          },
+          splash: {
+            appDisplayName: 'Real or Render',
+            backgroundUri: asset.mediaUrl,
+            description: `Daily Challenge: ${currentDate}`,
+            heading: 'Can You Spot Real or Render?',
+          }
+        });
+
+        res.status(200).json({
+          showToast: {
+            status: 'success',
+            message: `Successfully posted daily game ${currentDate}`,
+          },
+        });
+
+        console.log('post submitted successfully');
       } catch (error) {
         console.error(`Error in scheduled action: ${error}`);
         res.status(400).json({

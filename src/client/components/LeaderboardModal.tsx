@@ -88,10 +88,6 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
 
                 {!loading && !error && leaderboard && (
                     <>
-                        <div className="text-center text-xs text-muted-foreground mb-4">
-                            {leaderboard.totalPlayers} player{leaderboard.totalPlayers !== 1 ? 's' : ''} today
-                        </div>
-
                         {/* Top 10 Players */}
                         <div className="space-y-2 mb-4">
                             {leaderboard.topPlayers.map((player) => {
@@ -106,7 +102,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
                                     >
                                         <div className="text-xl w-8 text-center">{getRankIcon(player.rank)}</div>
                                         <img
-                                            src={`https://www.redditstatic.com/avatars/defaults/v2/avatar_default_${(player.rank % 8) + 1}.png`}
+                                            src={player.snoovatar || `https://www.redditstatic.com/avatars/defaults/v2/avatar_default_${(player.rank % 8) + 1}.png`}
                                             alt=""
                                             className="w-8 h-8 rounded-full"
                                         />
@@ -148,6 +144,9 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
                                 </div>
                             </>
                         )}
+                        <div className="text-center text-xs text-muted-foreground">
+                            {leaderboard.totalPlayers} player{leaderboard.totalPlayers !== 1 ? 's' : ''} today
+                        </div>
                     </>
                 )}
             </div>

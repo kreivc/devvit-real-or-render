@@ -12,6 +12,7 @@ import type {
   CheckPlayedResponse,
   PostCommentRequest,
   PostCommentResponse,
+  TopPlayer,
 } from '../../shared/types/api';
 
 /**
@@ -170,39 +171,64 @@ export const gameApiActions = (router: Router): void => {
       // Get total players
       const totalPlayers = await redis.zCard(leaderboardKey);
 
-      // Get top 10 players with scores (descending order)
-      const topPlayersData = await redis.zRange(leaderboardKey, 0, 9, { reverse: true, by: 'rank' });
+      // Get top 5 players with scores (descending order)
+      const topPlayersData = await redis.zRange(leaderboardKey, 0, 4, { reverse: true, by: 'rank' });
 
-      // Fetch usernames and player data for top players
-      const topPlayers = await Promise.all(
-        topPlayersData.map(async (entry: { member: string; score: number }, index: number) => {
-          const playerId = entry.member;
-          const score = entry.score;
+      // Fetch player data and usernames in parallel for better performance
+      const playerIds = topPlayersData.map(entry => entry.member);
 
-          // Get player data
-          const playerKey = `player:${playerId}:${date}`;
-          const playerData = await redis.hGetAll(playerKey);
-
-          // Get username from Reddit API
-          let username = playerId;
-          try {
-            // Ensure playerId has the correct format for getUserById
-            const formattedId = playerId.startsWith('t2_') ? playerId : `t2_${playerId}`;
-            const user = await reddit.getUserById(formattedId as `t2_${string}`);
-            username = user?.username || playerId;
-          } catch (error) {
-            console.error(`Failed to fetch username for ${playerId}:`, error);
-          }
-
-          return {
-            rank: index + 1,
-            username,
-            score,
-            correct: parseInt(playerData.correct || '0', 10),
-            timeMs: parseInt(playerData.time || '0', 10),
-          };
-        })
+      // Get all player data from Redis in parallel
+      const playerDataPromises = playerIds.map(playerId =>
+        redis.hGetAll(`player:${playerId}:${date}`)
       );
+      const allPlayerData = await Promise.all(playerDataPromises);
+
+      // Get all user info from Reddit API in parallel
+      const userInfoPromises = playerIds.map(async (playerId) => {
+        try {
+          // Ensure playerId has the correct format for getUserById
+          const formattedId = playerId.startsWith('t2_') ? playerId : `t2_${playerId}`;
+          const user = await reddit.getUserById(formattedId as `t2_${string}`);
+          return { playerId, user };
+        } catch (error) {
+          console.error(`Failed to fetch user info for ${playerId}:`, error);
+          return { playerId, user: null };
+        }
+      });
+      const userInfos = await Promise.all(userInfoPromises);
+
+      // Get all snoovatar URLs in parallel
+      const snoovatarPromises = userInfos.map(async ({ playerId, user }) => {
+        try {
+          const snoovatar = user ? await reddit.getSnoovatarUrl(user.username) || '' : '';
+          return { playerId, snoovatar };
+        } catch (error) {
+          console.error(`Failed to fetch snoovatar for ${playerId}:`, error);
+          return { playerId, snoovatar: '' };
+        }
+      });
+      const snoovatarResults = await Promise.all(snoovatarPromises);
+
+      // Create lookup maps for fast access
+      const userInfoMap = new Map(userInfos.map(({ playerId, user }) => [playerId, user]));
+      const snoovatarMap = new Map(snoovatarResults.map(({ playerId, snoovatar }) => [playerId, snoovatar]));
+
+      // Build top players array
+      const topPlayers: TopPlayer[] = topPlayersData.map((entry, index) => {
+        const playerId = entry.member;
+        const score = entry.score;
+        const playerData = allPlayerData[index] || {};
+        const user = userInfoMap.get(playerId);
+
+        return {
+          rank: index + 1,
+          username: user?.username || playerId,
+          score,
+          correct: parseInt(playerData.correct || '0', 10),
+          timeMs: parseInt(playerData.time || '0', 10),
+          snoovatar: snoovatarMap.get(playerId) || '',
+        };
+      });
 
       // Get user-specific data if userId provided
       let userRank: number | undefined;

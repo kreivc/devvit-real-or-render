@@ -62,13 +62,7 @@ export interface LeaderboardResponse {
   totalPlayers: number;
   userRank?: number;
   userScore?: number;
-  topPlayers: Array<{
-    rank: number;
-    username: string;
-    score: number;
-    correct: number;
-    timeMs: number;
-  }>;
+  topPlayers: TopPlayer[];
 }
 
 export interface CheckPlayedRequest {
@@ -149,4 +143,14 @@ export interface PostCommentResponse {
   success: boolean;
   commentId?: string;
   message?: string;
+}
+
+
+export interface TopPlayer {
+  rank: number;
+  username: string;
+  score: number;
+  correct: number;
+  timeMs: number;
+  snoovatar: string;
 }

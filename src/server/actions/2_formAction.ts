@@ -1,15 +1,19 @@
 ﻿import { Router } from 'express';
-import { media, reddit, redis } from '@devvit/web/server';
-import { JsonObject } from '@devvit/web/shared';
+import { media, reddit } from '@devvit/web/server';
+import { JsonValue } from '@devvit/web/shared';
 import { DailyGameData, RoRenderBackendData } from '../../shared/types/api';
 import { thumbSplash } from '../../shared/config/appIcon';
 
 export const formAction = (router: Router): void => {
-  router.post('/internal/form/create-game-form', async (req, res): Promise<void> => {
+  router.post('/internal/form/post-daily-game-form', async (req, res): Promise<void> => {
     try {
-      const { date, gameData } = req.body;
+      const { date } = req.body;
+      console.log(`Form action triggered. Saving ${date} to processing queue.`);
 
-      const gameDataJson: RoRenderBackendData[] = JSON.parse(gameData);
+      const dataUrl = `https://ugupzznjxhwwpowfhpmh.supabase.co/functions/v1/proxy-daily-game/${date}`
+
+      const response = await fetch(dataUrl);
+      const gameDataJson = await response.json() as RoRenderBackendData[];
 
       const pairMap: Record<string, { real?: string; render?: string; source?: string }> = {};
       gameDataJson.forEach((item) => {
@@ -66,49 +70,6 @@ export const formAction = (router: Router): void => {
         render: renderResponses[index],
       }));
 
-      console.log(`Form action triggered. Saving ${date} and ${gameData} to processing queue.`);
-      console.log(transformedDataWithMedia);
-
-      const key = `daily:${date}`;
-      await redis.set(key, JSON.stringify(transformedDataWithMedia));
-
-      // Display success to user
-      res.status(200).json({
-        showToast: {
-          appearance: 'success',
-          text: `Successfully seeded game data ${date}`,
-        },
-      });
-
-      /* ========== End Focus - Queue level data ========== */
-    } catch (error) {
-      console.error(`Error in form action: ${error}`);
-      res.status(400).json({
-        showToast: {
-          text: `Form action failed: ${error}`,
-        },
-      });
-    }
-  });
-
-  router.post('/internal/form/post-daily-game-form', async (req, res): Promise<void> => {
-    try {
-      const { date } = req.body;
-      console.log(`Form action triggered. Saving ${date} to processing queue.`);
-
-      const gameData = await redis.get(`daily:${date}`);
-      if (!gameData) {
-        res.status(200).json({
-          showToast: {
-            text: 'No game data found',
-          },
-        });
-        return;
-      }
-
-      console.log('gameData', gameData);
-      const gameDataJson: JsonObject = JSON.parse(gameData ?? '');
-
       // Upload base template with date dynamically rendered
       const baseTemplateUrl = `data:image/png;base64,${thumbSplash}`;
 
@@ -118,16 +79,14 @@ export const formAction = (router: Router): void => {
         url: baseTemplateUrl,
       });
 
-      console.log('asset uploaded successfully');
 
-      console.log('submitting post');
       // submit post with date in description
       await reddit.submitCustomPost({
         subredditName: 'real_or_render_dev',
         title: `Daily Game - ${date}`,
         postData: {
-          gameData: gameDataJson,
-          date: date,
+          gameData: transformedDataWithMedia as JsonValue,
+          date: date as string,
         },
         splash: {
           appDisplayName: 'Real or Render',
