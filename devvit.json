@@ -25,11 +25,19 @@
         "location": "subreddit",
         "forUserType": "moderator",
         "endpoint": "/internal/menu/post-daily-game"
+      },
+      {
+        "label": "Override Post Daily Game",
+        "description": "override post daily game",
+        "location": "post",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/override-post-daily-game"
       }
     ]
   },
   "forms": {
-    "postDailyGameForm": "/internal/form/post-daily-game-form"
+    "postDailyGameForm": "/internal/form/post-daily-game-form",
+    "overridePostDailyGameForm": "/internal/form/override-post-daily-game-form"
   },
   "triggers": {
     "onAppInstall": "/internal/on-app-install"

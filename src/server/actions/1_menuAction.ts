@@ -13,12 +13,48 @@ export const menuAction = (router: Router): void => {
                 name: 'date',
                 label: 'Date',
                 required: true,
+                defaultValue: new Date().toISOString().split('T')[0],
               },
             ],
           },
-          data: {
-            date: new Date().toISOString().split('T')[0],
-          },
+        },
+      });
+
+      /* ========== End Focus - Display a form to the user ========== */
+    } catch (error) {
+      console.error(`Error in menu action: ${error}`);
+      res.status(400).json({
+        status: 'error',
+        message: 'Menu action failed',
+      });
+    }
+  });
+
+  router.post('/internal/menu/override-post-daily-game', async (req, res): Promise<void> => {
+    const { targetId } = req.body;
+
+    try {
+      res.json({
+        showForm: {
+          name: 'overridePostDailyGameForm',
+          form: {
+            fields: [
+              {
+                type: 'string',
+                name: 'targetId',
+                label: 'Target ID',
+                required: true,
+                defaultValue: targetId,
+              },
+              {
+                type: 'string',
+                name: 'gameData',
+                label: 'Game Data',
+                required: true,
+                defaultValue: "[]"
+              },
+            ],
+          }
         },
       });
 
