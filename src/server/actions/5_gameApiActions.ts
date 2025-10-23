@@ -94,12 +94,12 @@ export const gameApiActions = (router: Router): void => {
         const originalCorrect = parseInt(playerData.correct || '0', 10);
         const originalTimeMs = parseInt(playerData.time || '0', 10);
 
-        // Get user's rank from leaderboard
-        const rankIndex = await redis.zRank(leaderboardKey, userId);
-        const rank = rankIndex !== null && rankIndex !== undefined ? rankIndex + 1 : undefined;
-
         // Get total players
         const totalPlayers = await redis.zCard(leaderboardKey);
+
+        // Get user's rank from leaderboard (calculate reverse rank manually)
+        const forwardRankIndex = await redis.zRank(leaderboardKey, userId);
+        const rank = forwardRankIndex !== null && forwardRankIndex !== undefined ? totalPlayers - forwardRankIndex : undefined;
 
         res.json({
           success: true,
@@ -124,12 +124,12 @@ export const gameApiActions = (router: Router): void => {
         time: timeMs.toString(),
       });
 
-      // Get user's rank (ZREVRANK returns 0-based index, so add 1)
-      const rankIndex = await redis.zRank(leaderboardKey, userId);
-      const rank = rankIndex !== null && rankIndex !== undefined ? rankIndex + 1 : undefined;
-
       // Get total players
       const totalPlayers = await redis.zCard(leaderboardKey);
+
+      // Get user's rank (calculate reverse rank manually)
+      const forwardRankIndex = await redis.zRank(leaderboardKey, userId);
+      const rank = forwardRankIndex !== null && forwardRankIndex !== undefined ? totalPlayers - forwardRankIndex : undefined;
 
       res.json({
         success: true,
@@ -235,8 +235,9 @@ export const gameApiActions = (router: Router): void => {
       let userScore: number | undefined;
 
       if (userId) {
-        const rankIndex = await redis.zRank(leaderboardKey, userId);
-        userRank = rankIndex !== null && rankIndex !== undefined ? rankIndex + 1 : undefined;
+        // Calculate reverse rank manually
+        const forwardRankIndex = await redis.zRank(leaderboardKey, userId);
+        userRank = forwardRankIndex !== null && forwardRankIndex !== undefined ? totalPlayers - forwardRankIndex : undefined;
 
         const scoreValue = await redis.zScore(leaderboardKey, userId);
         userScore = scoreValue !== null ? scoreValue : undefined;
@@ -308,9 +309,9 @@ export const gameApiActions = (router: Router): void => {
       const timeMs = parseInt(playerData.time || '0', 10);
       const incorrect = 10 - correct;
 
-      // Get player rank
-      const rankIndex = await redis.zRank(leaderboardKey, userId);
-      const rank = rankIndex !== null && rankIndex !== undefined ? rankIndex + 1 : 0;
+      // Get player rank (calculate reverse rank manually)
+      const forwardRankIndex = await redis.zRank(leaderboardKey, userId);
+      const rank = forwardRankIndex !== null && forwardRankIndex !== undefined ? totalPlayersToday - forwardRankIndex : 0;
 
       res.json({
         played: true,
