@@ -34,27 +34,35 @@ The game features a polished, mobile-first interface with four distinct screens:
 ## What Makes This Game Innovative?
 
 ### 1. AI Literacy Training
+
 Taps into the critical cultural conversation about AI-generated content. As synthetic media becomes more prevalent, the ability to distinguish real from AI-generated is an increasingly valuable skill. This game makes learning fun and competitive.
 
 ### 2. Fair Competition System
+
 The first-play-only scoring prevents score grinding and memorization while still allowing unlimited practice. You can learn and improve without the pressure of every attempt counting, but your first daily score ensures everyone competes on equal footing.
 
 ### 3. Shared Daily Experience
+
 Unlike games with random content, everyone plays the same 10 image pairs each day. This creates water-cooler moments - "Did you see round 7 today?" - and enables meaningful performance comparisons across the community.
 
 ### 4. Zero-Latency Architecture
+
 Intelligent prefetching downloads all images before gameplay begins, then randomizes them client-side. This ensures instant round transitions without any loading spinners or delays that would break immersion and affect timing accuracy.
 
 ### 5. Native Reddit Integration
+
 Built with Devvit to run directly in Reddit posts - no external websites, app downloads, or account creation needed. Play right in your feed with automatic Reddit authentication. The game lives where the community already is.
 
 ### 6. Transparent & Cheat-Proof
+
 The scoring formula is public and easy to understand, but server-side validation prevents manipulation. Score calculation happens on the backend with checks for reasonable completion times and correct formula application.
 
 ### 7. Educational Entertainment
+
 Players naturally develop pattern recognition skills for identifying AI artifacts - unusual textures, lighting inconsistencies, anatomical errors, distorted text. It's media literacy training disguised as entertainment.
 
 ### 8. Mobile-First Philosophy
+
 Designed from the ground up for touch interfaces with responsive layouts, large tap targets (minimum 44×44px), and optimized image sizing. Recognizes that most Reddit users access content on mobile devices.
 
 ## Technology Stack
@@ -91,6 +99,7 @@ Designed from the ground up for touch interfaces with responsive layouts, large 
 ### During Gameplay
 
 1. **Round Display**: Each round shows:
+
    - **Top Left**: Round counter (e.g., "Round 1 / 10")
    - **Top Right**: Real-time timer in MM:SS:mmm format (updates every 10ms)
    - **Center**: Two images side by side
@@ -98,12 +107,14 @@ Designed from the ground up for touch interfaces with responsive layouts, large 
    - **Instructions**: "Click on the photograph (not the AI-generated image)"
    - **Bottom**: Score counters showing "Correct: X" (green) and "Incorrect: X" (red)
 
-2. **Make Your Choice**: 
+2. **Make Your Choice**:
+
    - Click on the image you think is the real photograph
    - Images have hover effects (blue border, slight scale) for visual feedback
    - Touch-friendly on mobile with large tap targets
 
-3. **Instant Progression**: 
+3. **Instant Progression**:
+
    - No delay between rounds - immediately advances to the next image pair
    - No feedback on whether you were right or wrong (keeps the flow going)
    - Timer continues running throughout all 10 rounds
@@ -117,22 +128,25 @@ Designed from the ground up for touch interfaces with responsive layouts, large 
 
 The scoring formula is designed to prioritize accuracy while rewarding speed:
 
-**Formula**: `Score = (Correct Guesses × 1,000,000) + Time in Milliseconds`
+**Formula**: `Score = (Correct Guesses × 100,000,000) - Time in Milliseconds`
 
 **Examples**:
-- 10/10 correct in 45.5 seconds = 10,000,000 + 45,500 = **10,045,500 points**
-- 9/10 correct in 30.2 seconds = 9,000,000 + 30,200 = **9,030,200 points**
-- 8/10 correct in 25.0 seconds = 8,000,000 + 25,000 = **8,025,000 points**
+
+- 10/10 correct in 45.5 seconds = 1,000,000,000 - 45,500 = **999,954,500 points**
+- 9/10 correct in 30.2 seconds = 900,000,000 - 30,200 = **899,969,800 points**
+- 8/10 correct in 25.0 seconds = 800,000,000 - 25,000 = **799,975,000 points**
 
 **Key Points**:
+
 - Higher scores are better
-- Each correct answer is worth 1 million points
+- Each correct answer is worth 100 million points
 - Time acts as a tiebreaker (faster is better)
-- Getting one more correct is worth ~16 minutes of time difference
+- Getting one more correct is worth ~27.8 hours of time difference
 
 ### After Completing
 
 1. **Results Screen Shows**:
+
    - "Game Complete! 🎉" header
    - Current date (YYYY-MM-DD)
    - Your score out of 10 in large text
@@ -142,6 +156,7 @@ The scoring formula is designed to prioritize accuracy while rewarding speed:
    - Note if the score wasn't saved (already played today)
 
 2. **Action Buttons**:
+
    - **Share Results 🎉** (green): Share your score via Web Share API or copy to clipboard
    - **Play Again** (blue): Start a new game immediately (goes to loading screen)
    - **Back to Home** (gray): Return to the title screen
@@ -154,12 +169,14 @@ The scoring formula is designed to prioritize accuracy while rewarding speed:
 ### Tips for Success
 
 - **Look for Details**: AI-generated images often have subtle inconsistencies in:
+
   - Textures (skin, fabric, surfaces)
   - Lighting and shadows
   - Proportions and symmetry
   - Background elements
 
 - **Check Hands and Text**: AI commonly struggles with:
+
   - Fingers (wrong number, weird angles)
   - Hands (unnatural positions)
   - Readable text (gibberish or distorted letters)
@@ -216,6 +233,7 @@ src/
 ### ✅ Completed
 
 - **Backend Infrastructure**
+
   - ✅ Redis-based leaderboard system with daily keys
   - ✅ Score saving endpoint with first-play-only logic
   - ✅ Leaderboard retrieval with top 10 players
@@ -224,6 +242,7 @@ src/
   - ✅ Game data initialization from Redis
 
 - **Type System**
+
   - ✅ Complete TypeScript interfaces for all API endpoints
   - ✅ Game state types (GameRound, GameState, etc.)
   - ✅ Request/response types for client-server communication
@@ -236,6 +255,7 @@ src/
 ### 🚧 In Progress
 
 - **Frontend Components**
+
   - ⏳ TitleScreen component
   - ⏳ LoadingScreen with image prefetching
   - ⏳ GameScreen with timer and round progression
@@ -255,6 +275,7 @@ src/
 Saves player's first daily score to the leaderboard.
 
 **Request:**
+
 ```typescript
 {
   userId: string;
@@ -266,6 +287,7 @@ Saves player's first daily score to the leaderboard.
 ```
 
 **Response:**
+
 ```typescript
 {
   success: boolean;
@@ -281,6 +303,7 @@ Saves player's first daily score to the leaderboard.
 Retrieves leaderboard data for a specific date.
 
 **Response:**
+
 ```typescript
 {
   date: string;
@@ -302,6 +325,7 @@ Retrieves leaderboard data for a specific date.
 Checks if user has already played today.
 
 **Response:**
+
 ```typescript
 {
   played: boolean;
@@ -323,7 +347,7 @@ Checks if user has already played today.
 
 **Type:** Sorted Set (ZSET)
 
-**Score Formula:** `(correctGuesses × 1,000,000) + timeInMilliseconds`
+**Score Formula:** `(correctGuesses × 100,000,000) - timeInMilliseconds`
 
 ### Player Data Hash
 
@@ -332,6 +356,7 @@ Checks if user has already played today.
 **Type:** Hash
 
 **Fields:**
+
 - `correct`: Number of correct guesses (0-10)
 - `time`: Completion time in milliseconds
 

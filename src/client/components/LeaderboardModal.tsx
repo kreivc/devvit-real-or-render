@@ -88,7 +88,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
 
                 {!loading && !error && leaderboard && (
                     <>
-                        {/* Top 10 Players */}
+                        {/* Top 5 Players */}
                         <div className="space-y-2 mb-4">
                             {leaderboard.topPlayers.map((player) => {
                                 const isCurrentUser = player.username === userId || `t2_${player.username}` === userId;
@@ -121,14 +121,14 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
                             })}
                         </div>
 
-                        {/* Current User Rank (if not in top 10) */}
-                        {leaderboard.userRank && leaderboard.userRank > 10 && (
+                        {/* Current User Rank (if not in top 5) */}
+                        {leaderboard.userRank && leaderboard.userRank > 5 && leaderboard.userData && (
                             <>
                                 <div className="border-t border-border my-3"></div>
                                 <div className="flex items-center gap-3 p-2 rounded-lg bg-primary/20 border border-primary">
                                     <div className="text-xl w-8 text-center">{getRankIcon(leaderboard.userRank)}</div>
                                     <img
-                                        src={`https://www.redditstatic.com/avatars/defaults/v2/avatar_default_${(leaderboard.userRank % 8) + 1}.png`}
+                                        src={leaderboard.userData.snoovatar || `https://www.redditstatic.com/avatars/defaults/v2/avatar_default_${(leaderboard.userRank % 8) + 1}.png`}
                                         alt=""
                                         className="w-8 h-8 rounded-full"
                                     />
@@ -137,7 +137,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
                                             You
                                         </div>
                                         <div className="text-xs text-muted-foreground">
-                                            {leaderboard.topPlayers.find(p => p.username === userId)?.correct || 0}/10
+                                            {leaderboard.userData.correct}/10 • {formatTime(leaderboard.userData.timeMs)}
                                         </div>
                                     </div>
                                     <div className="text-sm font-bold text-yellow-400">#{leaderboard.userRank}</div>

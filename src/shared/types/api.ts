@@ -63,6 +63,11 @@ export interface LeaderboardResponse {
   userRank?: number;
   userScore?: number;
   topPlayers: TopPlayer[];
+  userData?: {
+    correct: number;
+    timeMs: number;
+    snoovatar: string;
+  };
 }
 
 export interface CheckPlayedRequest {

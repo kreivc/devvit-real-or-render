@@ -24,12 +24,8 @@ function getCurrentDate(): string {
   return dateStr || '';
 }
 
-/**
- * Helper function to calculate score
- * Formula: (Correct × 1,000,000) + Time(ms)
- */
 function calculateScore(correctGuesses: number, timeMs: number): number {
-  return correctGuesses * 1_000_000 + timeMs;
+  return correctGuesses * 100_000_000 - timeMs;
 }
 
 export const gameApiActions = (router: Router): void => {
@@ -155,7 +151,7 @@ export const gameApiActions = (router: Router): void => {
   router.get('/api/leaderboard', async (req, res): Promise<void> => {
     try {
       const date = (req.query.date as string) || getCurrentDate();
-      const userId = req.query.userId as string | undefined;
+      const userId = req.query.userId as string; // Always provided
 
       // Validate date format (YYYY-MM-DD)
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
@@ -168,25 +164,35 @@ export const gameApiActions = (router: Router): void => {
 
       const leaderboardKey = `leaderboard:daily:${date}`;
 
-      // Get total players
-      const totalPlayers = await redis.zCard(leaderboardKey);
+      // Get total players and user rank/score in parallel
+      const [totalPlayers, forwardRankIndex, userScore] = await Promise.all([
+        redis.zCard(leaderboardKey),
+        redis.zRank(leaderboardKey, userId),
+        redis.zScore(leaderboardKey, userId),
+      ]);
 
-      // Get top 5 players with scores (descending order)
+      // Calculate reverse rank (null if user hasn't played)
+      const userRank = forwardRankIndex !== null && forwardRankIndex !== undefined ? totalPlayers - forwardRankIndex : undefined;
+
+      // Get top 5 players with scores (descending order) - matches frontend expectation
       const topPlayersData = await redis.zRange(leaderboardKey, 0, 4, { reverse: true, by: 'rank' });
-
-      // Fetch player data and usernames in parallel for better performance
       const playerIds = topPlayersData.map(entry => entry.member);
 
+      // Check if current user is in top 5
+      const userInTop5 = userRank && userRank <= 5;
+
+      // Prepare all player IDs to fetch (top 5 + current user if not in top 5)
+      const allPlayerIds = userInTop5 ? playerIds : [...playerIds, userId];
+
       // Get all player data from Redis in parallel
-      const playerDataPromises = playerIds.map(playerId =>
+      const playerDataPromises = allPlayerIds.map(playerId =>
         redis.hGetAll(`player:${playerId}:${date}`)
       );
       const allPlayerData = await Promise.all(playerDataPromises);
 
       // Get all user info from Reddit API in parallel
-      const userInfoPromises = playerIds.map(async (playerId) => {
+      const userInfoPromises = allPlayerIds.map(async (playerId) => {
         try {
-          // Ensure playerId has the correct format for getUserById
           const formattedId = playerId.startsWith('t2_') ? playerId : `t2_${playerId}`;
           const user = await reddit.getUserById(formattedId as `t2_${string}`);
           return { playerId, user };
@@ -212,12 +218,13 @@ export const gameApiActions = (router: Router): void => {
       // Create lookup maps for fast access
       const userInfoMap = new Map(userInfos.map(({ playerId, user }) => [playerId, user]));
       const snoovatarMap = new Map(snoovatarResults.map(({ playerId, snoovatar }) => [playerId, snoovatar]));
+      const playerDataMap = new Map(allPlayerIds.map((playerId, index) => [playerId, allPlayerData[index] || {}]));
 
       // Build top players array
       const topPlayers: TopPlayer[] = topPlayersData.map((entry, index) => {
         const playerId = entry.member;
         const score = entry.score;
-        const playerData = allPlayerData[index] || {};
+        const playerData = playerDataMap.get(playerId)!;
         const user = userInfoMap.get(playerId);
 
         return {
@@ -230,25 +237,25 @@ export const gameApiActions = (router: Router): void => {
         };
       });
 
-      // Get user-specific data if userId provided
-      let userRank: number | undefined;
-      let userScore: number | undefined;
+      // Prepare user data (only if not in top 5)
+      let userData: { correct: number; timeMs: number; snoovatar: string } | undefined;
 
-      if (userId) {
-        // Calculate reverse rank manually
-        const forwardRankIndex = await redis.zRank(leaderboardKey, userId);
-        userRank = forwardRankIndex !== null && forwardRankIndex !== undefined ? totalPlayers - forwardRankIndex : undefined;
-
-        const scoreValue = await redis.zScore(leaderboardKey, userId);
-        userScore = scoreValue !== null ? scoreValue : undefined;
+      if (!userInTop5 && userRank) {
+        const playerData = playerDataMap.get(userId)!;
+        userData = {
+          correct: parseInt(playerData.correct || '0', 10),
+          timeMs: parseInt(playerData.time || '0', 10),
+          snoovatar: snoovatarMap.get(userId) || '',
+        };
       }
 
       res.json({
         date,
         totalPlayers,
         userRank,
-        userScore,
+        userScore: userScore !== null ? userScore : undefined,
         topPlayers,
+        userData,
       } as LeaderboardResponse);
     } catch (error) {
       console.error('Error in leaderboard endpoint:', error);
@@ -311,7 +318,7 @@ export const gameApiActions = (router: Router): void => {
 
       // Get player rank (calculate reverse rank manually)
       const forwardRankIndex = await redis.zRank(leaderboardKey, userId);
-      const rank = forwardRankIndex !== null && forwardRankIndex !== undefined ? totalPlayersToday - forwardRankIndex : 0;
+      const rank = forwardRankIndex !== null && forwardRankIndex !== undefined ? totalPlayersToday - forwardRankIndex : undefined;
 
       res.json({
         played: true,

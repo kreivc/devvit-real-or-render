@@ -30,8 +30,8 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [sourcesExpanded, setSourcesExpanded] = useState(false);
 
-  // Calculate score using the formula: (Correct × 1,000,000) + Time(ms)
-  const score = correct * 1_000_000 + totalTimeMs;
+  // Calculate score using the formula: (Correct × 100,000,000) - Time(ms)
+  const score = correct * 100_000_000 - totalTimeMs;
 
   // Format time as MM:SS
   const formatTime = (timeMs: number): string => {
