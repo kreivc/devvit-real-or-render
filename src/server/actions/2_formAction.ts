@@ -2,7 +2,6 @@
 import { media, reddit, context } from '@devvit/web/server';
 import { JsonValue } from '@devvit/web/shared';
 import { DailyGameData, RoRenderBackendData } from '../../shared/types/api';
-import { thumbSplash } from '../../shared/config/appIcon';
 
 export const formAction = (router: Router): void => {
   router.post('/internal/form/post-daily-game-form', async (req, res): Promise<void> => {
@@ -72,13 +71,13 @@ export const formAction = (router: Router): void => {
       }));
 
       // Upload base template with date dynamically rendered
-      const baseTemplateUrl = `data:image/png;base64,${thumbSplash}`;
+      // const baseTemplateUrl = `data:image/png;base64,${thumbSplash}`;
 
-      console.log('uploading base template asset');
-      const asset = await media.upload({
-        type: 'image',
-        url: baseTemplateUrl,
-      });
+      // console.log('uploading base template asset');
+      // const asset = await media.upload({
+      //   type: 'image',
+      //   url: baseTemplateUrl,
+      // });
 
 
       // submit post with date in description
@@ -91,9 +90,7 @@ export const formAction = (router: Router): void => {
         },
         splash: {
           appDisplayName: 'Real or Render',
-          backgroundUri: asset.mediaUrl,
-          description: `Daily Challenge: ${date}`,
-          heading: 'Can You Spot Real or Render?',
+          backgroundUri: 'transparent.png', // prevent tile background
         }
       });
 

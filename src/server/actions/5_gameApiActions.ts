@@ -120,6 +120,14 @@ export const gameApiActions = (router: Router): void => {
         time: timeMs.toString(),
       });
 
+      // Update daily statistics for averages (using Redis hash for atomic increments)
+      const statsKey = `stats:daily:${date}`;
+      await Promise.all([
+        redis.hIncrBy(statsKey, 'totalCorrect', correctGuesses),
+        redis.hIncrBy(statsKey, 'totalTime', timeMs),
+        redis.hIncrBy(statsKey, 'totalPlayers', 1),
+      ]);
+
       // Get total players
       const totalPlayers = await redis.zCard(leaderboardKey);
 
@@ -295,17 +303,33 @@ export const gameApiActions = (router: Router): void => {
 
       const playerKey = `player:${userId}:${date}`;
       const leaderboardKey = `leaderboard:daily:${date}`;
+      const statsKey = `stats:daily:${date}`;
 
-      // Check if player has played
-      const hasPlayed = await redis.exists(playerKey);
+      // Check if player has played and get stats in parallel
+      const [hasPlayed, totalPlayersToday, statsData] = await Promise.all([
+        redis.exists(playerKey),
+        redis.zCard(leaderboardKey),
+        redis.hGetAll(statsKey),
+      ]);
 
-      // Get total players for today
-      const totalPlayersToday = await redis.zCard(leaderboardKey);
+      // Calculate averages from stats
+      let averageStats: { avgCorrect: number; avgTimeSeconds: number } | undefined;
+      if (statsData.totalPlayers && parseInt(statsData.totalPlayers, 10) > 0) {
+        const totalPlayers = parseInt(statsData.totalPlayers, 10);
+        const totalCorrect = parseInt(statsData.totalCorrect || '0', 10);
+        const totalTime = parseInt(statsData.totalTime || '0', 10);
+
+        averageStats = {
+          avgCorrect: Math.round((totalCorrect / totalPlayers) * 10) / 10, // Round to 1 decimal
+          avgTimeSeconds: Math.round(totalTime / totalPlayers / 100) / 10, // Convert to seconds, round to 1 decimal
+        };
+      }
 
       if (!hasPlayed) {
         res.json({
           played: false,
           totalPlayersToday,
+          averageStats,
         } as CheckPlayedResponse);
         return;
       }
@@ -329,6 +353,7 @@ export const gameApiActions = (router: Router): void => {
           timeMs,
           rank,
         },
+        averageStats,
       } as CheckPlayedResponse);
     } catch (error) {
       console.error('Error in check-played-today endpoint:', error);

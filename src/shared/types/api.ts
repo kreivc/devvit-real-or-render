@@ -84,6 +84,10 @@ export interface CheckPlayedResponse {
     timeMs: number;
     rank: number;
   };
+  averageStats?: {
+    avgCorrect: number;
+    avgTimeSeconds: number;
+  };
 }
 
 // Game State Interfaces

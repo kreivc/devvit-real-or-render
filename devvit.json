@@ -17,6 +17,9 @@
   "media": {
     "dir": "assets"
   },
+  "splash": {
+    "minimal": true
+  },
   "menu": {
     "items": [
       {
@@ -50,6 +53,10 @@
       "create-game-post-task": {
         "endpoint": "/internal/scheduler/create-game-post",
         "cron": "0 7 * * *"
+      },
+      "cache-leaderboard-users-task": {
+        "endpoint": "/internal/scheduler/cache-leaderboard-users",
+        "cron": "*/15 * * * *"
       }
     }
   },

@@ -18,11 +18,13 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ gameData, onLoadCo
     const totalImages = imageUrls.length;
     let loadedCount = 0;
 
-    // Create promises for each image
     const imagePromises = imageUrls.map(
       url =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve) => {
           const img = new Image();
+
+          img.loading = 'eager';
+          img.decoding = 'async';
 
           img.onload = () => {
             loadedCount++;
@@ -31,7 +33,10 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ gameData, onLoadCo
           };
 
           img.onerror = () => {
-            reject(new Error(`Failed to load image: ${url}`));
+            console.warn(`Failed to load image: ${url}`);
+            loadedCount++;
+            setProgress(Math.round((loadedCount / totalImages) * 100));
+            resolve();
           };
 
           // Start loading the image
@@ -39,7 +44,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ gameData, onLoadCo
         })
     );
 
-    // Wait for all images to load
+    // Wait for all images to load (or fail gracefully)
     await Promise.all(imagePromises);
   };
 
