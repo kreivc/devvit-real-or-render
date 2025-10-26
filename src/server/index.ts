@@ -5,8 +5,7 @@ import { createServer, getServerPort } from '@devvit/web/server';
 import { menuAction } from './actions/1_menuAction';
 import { formAction } from './actions/2_formAction';
 import { scheduledAction } from './actions/3_scheduledAction';
-import { initGameAction } from './actions/4_initGameAction';
-import { gameApiActions } from './actions/5_gameApiActions';
+import { gameApiActions } from './actions/4_gameApiActions';
 /* ========== End Focus - Import action files ========== */
 
 const app = express();
@@ -24,7 +23,6 @@ const router = express.Router();
 menuAction(router);
 formAction(router);
 scheduledAction(router);
-initGameAction(router);
 gameApiActions(router);
 /* ========== End Focus - Register game actions ========== */
 

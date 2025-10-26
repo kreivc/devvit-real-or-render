@@ -10,7 +10,8 @@ interface TitleScreenProps {
 }
 
 export const TitleScreen: React.FC<TitleScreenProps> = ({ gameDate, onPlay }) => {
-  const { userId } = context;
+  // Safely access context properties - context might not be fully initialized
+  const userId = context?.userId;
   const [playData, setPlayData] = useState<CheckPlayedResponse | null>(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
@@ -264,7 +265,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ gameDate, onPlay }) =>
         </div>
 
         {/* Player Count and Average Stats - Bottom Center */}
-        <div className="absolute bottom-2 sm:bottom-4 left-1/2 transform -translate-x-1/2 text-center">
+        <div className={`absolute bottom-2 sm:bottom-4 left-1/2 transform -translate-x-1/2 text-center ${totalPlayersToday === 0 ? 'hidden' : 'block'}`}>
           <p className="text-xs sm:text-sm text-foreground/70">
             {totalPlayersToday} played this challenge
           </p>
@@ -277,9 +278,9 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ gameDate, onPlay }) =>
 
         {/* User Rank Badge - Bottom Right (fade in with metadata) */}
         <div
-          className={`absolute bottom-2 right-2 sm:bottom-4 sm:right-4 bg-yellow-500/10 border border-yellow-500 rounded-lg px-3 py-2 backdrop-blur-sm transition-all duration-1000 ease-out ${showMetadata && playData?.played && playData.score
-            ? 'opacity-100 transform translate-y-0'
-            : 'opacity-0 transform translate-y-2 pointer-events-none'
+          className={`absolute bottom-2 right-2 sm:bottom-4 sm:right-4 bg-yellow-500/10 border border-yellow-500 rounded-lg px-3 py-2 backdrop-blur-sm transition-all duration-1000 ease-out ${totalPlayersToday === 0 ? 'hidden' : (showMetadata && playData?.played && playData.score
+            ? 'block opacity-100 transform translate-y-0'
+            : 'block opacity-0 transform translate-y-2 pointer-events-none')
             }`}
         >
           <div className="text-yellow-400 text-lg sm:text-xl font-bold">

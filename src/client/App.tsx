@@ -15,10 +15,12 @@ interface GameResults {
   userAnswers: boolean[];
 }
 
-// Render game
 export const App = () => {
-  const { postData } = context;
+  const postData = context?.postData?.developerData ?? context?.postData ?? {};
+
+  // @ts-expect-error - postData is not typed
   const gameData = postData?.gameData as DailyGameData[] | undefined;
+  // @ts-expect-error - postData is not typed
   const gameDate = postData?.date as string | undefined;
 
   // State management for game flow
@@ -26,7 +28,20 @@ export const App = () => {
   const [gameRounds, setGameRounds] = useState<GameRound[]>([]);
   const [gameResults, setGameResults] = useState<GameResults | null>(null);
 
-  if (!gameData || !gameDate) return null;
+  if (!gameData || !gameDate) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="text-center px-4">
+          <h2 className="text-2xl font-semibold mb-4 text-white">
+            Please update your Reddit app to the latest version
+          </h2>
+          <p className="text-white">
+            This feature requires the latest version of Reddit. Visit the App Store or Google Play Store to update.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Handler: Title Screen -> Loading Screen
   const handlePlay = () => {

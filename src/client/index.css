@@ -153,6 +153,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-synthesis: none;
+  font-display: swap; /* Ensures text is visible during font load */
 }
 
 button {

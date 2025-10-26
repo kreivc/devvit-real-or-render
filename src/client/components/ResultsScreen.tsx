@@ -22,7 +22,8 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   sources,
   onPlayAgain,
 }) => {
-  const { userId } = context;
+  // Safely access context properties - context might not be fully initialized
+  const userId = context?.userId;
   const [saveResponse, setSaveResponse] = useState<SaveScoreResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -157,8 +158,8 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
               <>
                 <div
                   className={`bg-yellow-900 bg-opacity-20 border border-yellow-500 rounded p-1.5 text-center transition-all duration-500 ease-out ${saveResponse.saved && saveResponse.rank !== undefined && saveResponse.totalPlayers !== undefined
-                    ? 'opacity-100 transform translate-y-0'
-                    : 'opacity-0 transform translate-y-2 pointer-events-none'
+                    ? 'block opacity-100 transform translate-y-0'
+                    : 'hidden'
                     }`}
                 >
                   <div className="text-sm font-bold text-yellow-400">
@@ -168,8 +169,8 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
                 <div
                   className={`bg-blue-900 bg-opacity-20 border border-blue-500 rounded p-1.5 text-center transition-all duration-500 ease-out ${!saveResponse.saved
-                    ? 'opacity-100 transform translate-y-0'
-                    : 'opacity-0 transform translate-y-2 pointer-events-none'
+                    ? 'block opacity-100 transform translate-y-0'
+                    : 'hidden'
                     }`}
                 >
                   <p className="text-blue-400 text-xs">

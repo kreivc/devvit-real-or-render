@@ -1,14 +1,6 @@
-﻿/*
- * Registers an action that is called by the Devvit scheduler. This schedule is defined in the devvit.json.
- * See https://developers.reddit.com/docs/capabilities/server/scheduler
- *
- * u/beach-brews
- */
-
-import { Router } from 'express';
+﻿import { Router } from 'express';
 import { media, reddit, context } from '@devvit/web/server';
 import { DailyGameData, RoRenderBackendData } from '../../shared/types/api';
-import { thumbSplash } from '../../shared/config/appIcon';
 import { JsonValue } from '@devvit/web/shared';
 
 export const scheduledAction = (router: Router): void => {
@@ -79,13 +71,13 @@ export const scheduledAction = (router: Router): void => {
         }));
 
         // Upload base template with date dynamically rendered
-        const baseTemplateUrl = `data:image/png;base64,${thumbSplash}`;
+        // const baseTemplateUrl = `data:image/png;base64,${thumbSplash}`;
 
-        console.log('uploading base template asset');
-        const asset = await media.upload({
-          type: 'image',
-          url: baseTemplateUrl,
-        });
+        // console.log('uploading base template asset');
+        // const asset = await media.upload({
+        //   type: 'image',
+        //   url: baseTemplateUrl,
+        // });
 
 
         // submit post with date in description
@@ -98,9 +90,7 @@ export const scheduledAction = (router: Router): void => {
           },
           splash: {
             appDisplayName: 'Real or Render',
-            backgroundUri: asset.mediaUrl,
-            description: `Daily Challenge: ${currentDate}`,
-            heading: 'Can You Spot Real or Render?',
+            backgroundUri: 'transparent.png', // prevent tile background
           }
         });
 
