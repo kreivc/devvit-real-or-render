@@ -81,7 +81,7 @@ export const scheduledAction = (router: Router): void => {
 
 
         // submit post with date in description
-        await reddit.submitCustomPost({
+        const post = await reddit.submitCustomPost({
           subredditName: subredditName,
           title: `Daily Game - ${currentDate}`,
           postData: {
@@ -92,6 +92,12 @@ export const scheduledAction = (router: Router): void => {
             appDisplayName: 'Real or Render',
             backgroundUri: 'transparent.png', // prevent tile background
           }
+        });
+
+        await reddit.crosspost({
+          subredditName: 'GamesOnReddit',
+          postId: post.id,
+          title: `Daily Game - ${currentDate}`,
         });
 
         res.status(200).json({

@@ -67,6 +67,13 @@ export const App = () => {
     setCurrentScreen('loading');
   };
 
+  // Handler: Results Screen -> Title Screen (Home)
+  const handleHome = () => {
+    setGameRounds([]);
+    setGameResults(null);
+    setCurrentScreen('title');
+  };
+
   // Render current screen based on state
   switch (currentScreen) {
     case 'title':
@@ -96,6 +103,7 @@ export const App = () => {
             totalTimeMs={gameResults.totalTimeMs}
             sources={sources}
             onPlayAgain={handlePlayAgain}
+            onHome={handleHome}
           />
         );
       }

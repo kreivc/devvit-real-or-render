@@ -12,6 +12,7 @@ interface ResultsScreenProps {
   totalTimeMs: number;
   sources: string[];
   onPlayAgain: () => void;
+  onHome: () => void;
 }
 
 export const ResultsScreen: React.FC<ResultsScreenProps> = ({
@@ -21,6 +22,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   totalTimeMs,
   sources,
   onPlayAgain,
+  onHome,
 }) => {
   // Safely access context properties - context might not be fully initialized
   const userId = context?.userId;
@@ -106,6 +108,15 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
         />
       )}
       <div className="relative flex flex-col h-full bg-background text-foreground overflow-hidden">
+        {/* Home Button - Top Left */}
+        <button
+          onClick={onHome}
+          className="absolute top-2 left-2 sm:top-4 sm:left-4 text-3xl sm:text-4xl hover:scale-110 transition-transform z-10"
+          title="Go Home"
+        >
+          🏠
+        </button>
+
         {/* Leaderboard Button - Top Right (outside main content) */}
         <button
           onClick={() => setShowLeaderboard(true)}

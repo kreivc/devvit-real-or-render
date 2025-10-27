@@ -61,7 +61,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
             onClick={onClose}
         >
             <div
-                className="bg-card/90 backdrop-blur-md rounded-lg border border-border max-w-sm w-full p-4 max-h-[70vh] overflow-y-auto shadow-2xl"
+                className="bg-card/90 backdrop-blur-md rounded-lg border border-border max-w-sm w-full p-4 max-h-svh overflow-y-auto shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex justify-between items-center mb-4">

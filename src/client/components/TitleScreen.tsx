@@ -201,7 +201,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ gameDate, onPlay }) =>
       <div className="relative flex flex-col items-center justify-center h-full bg-background text-foreground p-3 overflow-hidden">
         {/* Game Date - Top Left (fade in) */}
         <div
-          className={`absolute top-2 left-2 sm:top-4 sm:left-4 text-foreground/70 text-xs sm:text-sm font-mono transition-all duration-1000 ease-out ${showMetadata ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
+          className={`absolute top-[15px] left-3 sm:top-4 sm:left-4 text-foreground/70 text-xs sm:text-sm font-mono transition-all duration-1000 ease-out ${showMetadata ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
             }`}
         >
           {gameDate}
