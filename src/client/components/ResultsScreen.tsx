@@ -198,7 +198,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
               onClick={handleShare}
               className="px-3 py-2 bg-green-500 hover:bg-green-500/90 active:bg-green-500/80 rounded-lg font-bold text-sm transition-colors"
             >
-              💬 Share
+              💬 Comment
             </button>
             <button
               onClick={onPlayAgain}

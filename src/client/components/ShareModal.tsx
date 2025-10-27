@@ -47,7 +47,6 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                     score: correct,
                     time: formatTime(totalTimeMs),
                     rank,
-                    totalPlayers,
                 }),
             });
 
@@ -85,7 +84,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                     <>
                         <div className="mb-4">
                             <div className="flex justify-between items-center mb-2">
-                                <h2 className="text-lg font-bold">💬 Share Your Results</h2>
+                                <h2 className="text-lg font-bold">💬 Comment Your Results</h2>
                                 <button
                                     onClick={onClose}
                                     className="text-muted-foreground hover:text-foreground text-2xl leading-none"

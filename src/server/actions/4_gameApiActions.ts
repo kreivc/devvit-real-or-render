@@ -371,7 +371,7 @@ export const gameApiActions = (router: Router): void => {
   router.post('/api/post-comment', async (_req, res): Promise<void> => {
     try {
       const body = _req.body as PostCommentRequest;
-      const { comment, score, time } = body;
+      const { comment, score, time, rank } = body;
 
       // Get current post context
       const { postId } = context;
@@ -384,16 +384,14 @@ export const gameApiActions = (router: Router): void => {
       }
 
       // Build comment text
-      let commentText = `🎮 **Real or Render Score**\n\n`;
-      commentText += `Score: **${score}/10**\n`;
-      commentText += `Time: **${time}**\n`;
+      let commentText = `🎮 **Real or Render Score**
 
-      // if (rank && totalPlayers) {
-      //   commentText += `Rank: **#${rank}** of **${totalPlayers}**\n`;
-      // }
+Score: **${score}/10**  
+Time: **${time}**  
+Current Rank: **#${rank}**\n\n`;
 
       if (comment && comment.trim()) {
-        commentText += `\n---\n\n${comment.trim()}`;
+        commentText += `---\n\n${comment.trim()}`;
       }
 
       // Post comment to Reddit
