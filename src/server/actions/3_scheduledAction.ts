@@ -98,6 +98,8 @@ export const scheduledAction = (router: Router): void => {
           subredditName: 'GamesOnReddit',
           postId: post.id,
           title: `Daily Game - ${currentDate}`,
+          flairText: 'Game',
+          flairId: '4445574a-9b93-11ef-af0c-124cc5223b74',
         });
 
         res.status(200).json({

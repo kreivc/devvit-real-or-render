@@ -21,6 +21,7 @@ body {
   overflow: hidden;
   position: fixed;
   width: 100%;
+  user-select: none;
 }
 
 :root {
