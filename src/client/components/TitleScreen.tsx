@@ -7,9 +7,10 @@ import { LeaderboardModal } from './LeaderboardModal';
 interface TitleScreenProps {
   gameDate: string;
   onPlay: () => void;
+  titleThumbUrl?: string | undefined;
 }
 
-export const TitleScreen: React.FC<TitleScreenProps> = ({ gameDate, onPlay }) => {
+export const TitleScreen: React.FC<TitleScreenProps> = ({ gameDate, onPlay, titleThumbUrl }) => {
   // Safely access context properties - context might not be fully initialized
   const userId = context?.userId;
   const [playData, setPlayData] = useState<CheckPlayedResponse | null>(null);
@@ -198,7 +199,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ gameDate, onPlay }) =>
           onClose={() => setShowLeaderboard(false)}
         />
       )}
-      <div className="relative flex flex-col items-center justify-center h-full bg-background text-foreground p-3 overflow-hidden">
+      <div className="relative flex items-center justify-center h-full bg-background text-foreground p-3 overflow-hidden">
         {/* Game Date - Top Left (fade in) */}
         <div
           className={`absolute top-[15px] left-3 sm:top-4 sm:left-4 text-foreground/70 text-xs sm:text-sm font-mono transition-all duration-1000 ease-out ${showMetadata ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
@@ -218,7 +219,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ gameDate, onPlay }) =>
         </button>
 
         {/* Main Content - Center */}
-        <div className="flex flex-col items-center z-10">
+        <div className="flex flex-col items-center z-10 flex-1">
           {/* ASCII Art Title with pixelated tearing effect */}
           <pre
             className="ascii-art text-primary text-center overflow-x-auto whitespace-pre font-mono leading-tight px-2 max-w-full text-[0.475rem] sm:text-xs md:text-sm mb-4 overflow-y-hidden"
@@ -275,6 +276,17 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ gameDate, onPlay }) =>
             </p>
           )}
         </div>
+
+        {/* Side Image - Bottom Left (1:1 square, only shown if provided) */}
+        {titleThumbUrl && titleThumbUrl?.trim() !== '' && (
+          <div className="absolute bottom-2 left-2 sm:bottom-4 sm:left-4 w-24 h-24 sm:w-40 sm:h-40 aspect-square rounded-lg overflow-hidden shadow-lg animate-pulse-slow">
+            <img
+              src={titleThumbUrl}
+              alt="Side content"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
 
         {/* User Rank Badge - Bottom Right (fade in with metadata) */}
         <div

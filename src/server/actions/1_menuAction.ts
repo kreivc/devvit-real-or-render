@@ -67,4 +67,40 @@ export const menuAction = (router: Router): void => {
       });
     }
   });
+  router.post('/internal/menu/add-unique-image-to-post', async (req, res): Promise<void> => {
+    const { targetId } = req.body;
+
+    try {
+      res.json({
+        showForm: {
+          name: 'addUniqueImageToPostForm',
+          form: {
+            fields: [
+              {
+                type: 'string',
+                name: 'targetId',
+                label: 'Target ID',
+                required: true,
+                defaultValue: targetId,
+              },
+              {
+                type: 'string',
+                name: 'imageUrl',
+                label: 'Image URL',
+                required: true,
+              },
+            ],
+          }
+        },
+      });
+
+      /* ========== End Focus - Display a form to the user ========== */
+    } catch (error) {
+      console.error(`Error in menu action: ${error}`);
+      res.status(400).json({
+        status: 'error',
+        message: 'Menu action failed',
+      });
+    }
+  });
 };

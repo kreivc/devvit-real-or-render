@@ -199,4 +199,40 @@ export const formAction = (router: Router): void => {
       });
     }
   });
+  router.post('/internal/form/add-unique-image-to-post', async (req, res): Promise<void> => {
+    try {
+      const { targetId, imageUrl } = req.body;
+
+      const post = await reddit.getPostById(targetId as `t3_${string}`);
+      const postData = await post.getPostData();
+
+      const mediaAsset = await media.upload({
+        url: imageUrl,
+        type: 'image',
+      });
+
+      const redditImageUrl = mediaAsset.mediaUrl;
+
+      await post.setPostData({
+        gameData: postData!.gameData as JsonValue,
+        date: postData!.date as string,
+        t: redditImageUrl,
+      });
+
+      res.status(200).json({
+        showToast: {
+          appearance: 'success',
+          text: `Unique image added to post`,
+        },
+        navigateTo: post
+      });
+    } catch (error) {
+      console.error(`Error in form action: ${error}`);
+      res.status(400).json({
+        showToast: {
+          text: `Form action failed: ${error}`,
+        },
+      });
+    }
+  });
 };

@@ -22,6 +22,9 @@ export const App = () => {
   const gameData = postData?.gameData as DailyGameData[] | undefined;
   // @ts-expect-error - postData is not typed
   const gameDate = postData?.date as string | undefined;
+  // @ts-expect-error - postData is not typed
+  const titleThumbUrl = postData?.t as string | undefined;
+
 
   // State management for game flow
   const [currentScreen, setCurrentScreen] = useState<CurrentScreen>('title');
@@ -77,7 +80,7 @@ export const App = () => {
   // Render current screen based on state
   switch (currentScreen) {
     case 'title':
-      return <TitleScreen gameDate={gameDate} onPlay={handlePlay} />;
+      return <TitleScreen gameDate={gameDate} onPlay={handlePlay} titleThumbUrl={titleThumbUrl} />;
 
     case 'loading':
       return <LoadingScreen gameData={gameData} onLoadComplete={handleLoadComplete} />;
@@ -89,7 +92,7 @@ export const App = () => {
       {
         if (!gameResults) {
           // Fallback if results are missing (shouldn't happen)
-          return <TitleScreen gameDate={gameDate} onPlay={handlePlay} />;
+          return <TitleScreen gameDate={gameDate} onPlay={handlePlay} titleThumbUrl={titleThumbUrl} />;
         }
 
         // Extract sources from game rounds for attribution
@@ -109,6 +112,6 @@ export const App = () => {
       }
 
     default:
-      return <TitleScreen gameDate={gameDate} onPlay={handlePlay} />;
+      return <TitleScreen gameDate={gameDate} onPlay={handlePlay} titleThumbUrl={titleThumbUrl} />;
   }
 };

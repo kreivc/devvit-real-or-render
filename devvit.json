@@ -35,12 +35,20 @@
         "location": "post",
         "forUserType": "moderator",
         "endpoint": "/internal/menu/override-post-daily-game"
+      },
+      {
+        "label": "Add Unique Image to Post",
+        "description": "add unique image to post",
+        "location": "post",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/add-unique-image-to-post"
       }
     ]
   },
   "forms": {
     "postDailyGameForm": "/internal/form/post-daily-game-form",
-    "overridePostDailyGameForm": "/internal/form/override-post-daily-game-form"
+    "overridePostDailyGameForm": "/internal/form/override-post-daily-game-form",
+    "addUniqueImageToPostForm": "/internal/form/add-unique-image-to-post"
   },
   "triggers": {
     "onAppInstall": "/internal/on-app-install"
