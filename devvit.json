@@ -60,7 +60,7 @@
     "tasks": {
       "create-game-post-task": {
         "endpoint": "/internal/scheduler/create-game-post",
-        "cron": "0 7 * * *"
+        "cron": "0 12 * * *"
       }
     }
   },
