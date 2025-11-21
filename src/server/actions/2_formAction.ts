@@ -12,8 +12,11 @@ export const formAction = (router: Router): void => {
 
       const dataUrl = `https://ugupzznjxhwwpowfhpmh.supabase.co/functions/v1/proxy-daily-game/${date}`
 
+      console.log('fetching data');
       const response = await fetch(dataUrl);
+      console.log('data fetched');
       const gameDataJson = await response.json() as RoRenderBackendData[];
+      console.log('game data parsed');
 
       const pairMap: Record<string, { real?: string; render?: string; source?: string }> = {};
       gameDataJson.forEach((item) => {
@@ -41,6 +44,8 @@ export const formAction = (router: Router): void => {
           source: source ?? '',
         })
       );
+
+      console.log('uploading images');
 
       const realResponses = await Promise.all(
         transformedData.map(async (item) => {
@@ -79,9 +84,11 @@ export const formAction = (router: Router): void => {
       //   url: baseTemplateUrl,
       // });
 
+      console.log('posting post');
+
 
       // submit post with date in description
-      await reddit.submitCustomPost({
+      const posted = await reddit.submitCustomPost({
         subredditName: subredditName,
         title: `Daily Game - ${date}`,
         postData: {
@@ -99,6 +106,7 @@ export const formAction = (router: Router): void => {
           appearance: 'success',
           text: `Successfully posted daily game ${date}`,
         },
+        navigateTo: posted
       });
 
       console.log('post submitted successfully');

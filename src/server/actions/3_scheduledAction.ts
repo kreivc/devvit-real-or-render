@@ -94,13 +94,19 @@ export const scheduledAction = (router: Router): void => {
           }
         });
 
-        await reddit.crosspost({
-          subredditName: 'GamesOnReddit',
-          postId: post.id,
-          title: `Daily Game - ${currentDate}`,
-          flairText: 'Game',
-          flairId: '4445574a-9b93-11ef-af0c-124cc5223b74',
-        });
+        // Only crosspost 2 times a week (Monday and Thursday)
+        const dayOfWeek = new Date().getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+        const shouldCrosspost = dayOfWeek === 1 || dayOfWeek === 4; // Monday (1) or Thursday (4)
+
+        if (shouldCrosspost) {
+          await reddit.crosspost({
+            subredditName: 'GamesOnReddit',
+            postId: post.id,
+            title: `Daily Game - ${currentDate}`,
+            flairText: 'Game',
+            flairId: '4445574a-9b93-11ef-af0c-124cc5223b74',
+          });
+        }
 
         res.status(200).json({
           showToast: {
